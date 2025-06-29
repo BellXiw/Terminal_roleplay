@@ -6,156 +6,199 @@
   <style>
     body {
       background-color: black;
-      color: lime;
-      font-family: monospace;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+      text-align: center;
+      padding: 10px;
+    }
+    #targetPattern, #grid {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      grid-gap: 5px;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .cell, .target-cell {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #00ff00;
+      font-size: 22px;
+    }
+    .active {
+      background-color: #00ff00;
+      color: black;
+    }
+    #controls {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    .dpad {
+      display: grid;
+      grid-template-areas:
+        ". up ."
+        "left none right"
+        ". down .";
+      grid-gap: 5px;
+      justify-content: center;
+      align-items: center;
+    }
+    .dpad button {
+      width: 40px;
+      height: 40px;
+    }
+    .up { grid-area: up; }
+    .down { grid-area: down; }
+    .left { grid-area: left; }
+    .right { grid-area: right; }
+    .none { grid-area: none; visibility: hidden; }
+    .button-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
     }
-    .cell {
-      width: 30px;
-      height: 30px;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid lime;
+    #timer, #message {
+      margin-top: 15px;
+      color: yellow;
       font-size: 18px;
     }
-    .active {
-      background-color: rgba(0, 255, 0, 0.3);
-    }
-    #target {
-      margin-bottom: 20px;
-    }
-    #status {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-    #timer {
-      margin: 10px 0;
-      color: yellow;
+    #restartBtn {
+      display: none;
+      margin-top: 15px;
+      padding: 5px 15px;
+      font-size: 16px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div id="target"></div>
-  <div id="grid"></div>
-  <div id="controls">
-    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 5px;">
-      <button onclick="move(-1, 0)">⬅️</button>
-      <button onclick="move(0, -1)">⬆️</button>
-      <button onclick="move(1, 0)">➡️</button>
+  <h2>Access Terminal</h2>
+  <div>Target Pattern:</div>
+  <div id="targetPattern"></div>
+  <div id="grid"></div>  <div id="controls">
+    <div class="dpad">
+      <button class="up" onclick="move(0, -1)">⬆️</button>
+      <button class="left" onclick="move(-1, 0)">⬅️</button>
+      <button class="right" onclick="move(1, 0)">➡️</button>
+      <button class="down" onclick="move(0, 1)">⬇️</button>
+      <div class="none"></div>
     </div>
-    <div style="margin: 5px 0;">
+    <div class="button-section">
       <button onclick="action()">✅ ACTION</button>
     </div>
-    <div style="display: flex; justify-content: center;">
-      <button onclick="move(0, 1)">⬇️</button>
-    </div>
-  </div>
-  <div id="timer"></div>
-  <div id="status"></div>
-  <div id="restart" style="margin-top: 20px; display:none;">
-    <button onclick="restart()">🔁 Restart</button>
-  </div>
-  <script>
-    let grid = [];
+  </div>  <div id="timer"></div>
+  <div id="message"></div>
+  <button id="restartBtn" onclick="startGame()">🔁 Restart</button>  <script>
+    const gridSize = 3;
+    let gridData = [];
     let targetPattern = [];
-    let size = 3;
-    let x = 0, y = 0;
-    let timerInterval;function generatePattern() {
-  let pattern = [];
-  for (let i = 0; i < size; i++) {
-    pattern[i] = [];
-    for (let j = 0; j < size; j++) {
-      pattern[i][j] = Math.random() > 0.5 ? 1 : 0;
+    let currentX = 0;
+    let currentY = 0;
+    let timerInterval;
+    let timeLeft = 15;
+
+    const gridElement = document.getElementById("grid");
+    const targetElement = document.getElementById("targetPattern");
+    const timerElement = document.getElementById("timer");
+    const messageElement = document.getElementById("message");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function generatePattern() {
+      const pattern = [];
+      for (let y = 0; y < gridSize; y++) {
+        pattern[y] = [];
+        for (let x = 0; x < gridSize; x++) {
+          pattern[y][x] = Math.random() < 0.5 ? 0 : 1;
+        }
+      }
+      return pattern;
     }
-  }
-  return pattern;
-}
 
-function drawGrid() {
-  const gridDiv = document.getElementById("grid");
-  gridDiv.innerHTML = "";
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.textContent = grid[i][j];
-      if (i === y && j === x) cell.classList.add("active");
-      gridDiv.appendChild(cell);
+    function renderGrid() {
+      gridElement.innerHTML = "";
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          if (x === currentX && y === currentY) cell.classList.add("active");
+          cell.textContent = gridData[y][x];
+          gridElement.appendChild(cell);
+        }
+      }
     }
-    const br = document.createElement("br");
-    gridDiv.appendChild(br);
-  }
-}
 
-function drawTarget() {
-  const targetDiv = document.getElementById("target");
-  targetDiv.innerHTML = "<b>Target Pattern:</b><br/>";
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.textContent = targetPattern[i][j];
-      targetDiv.appendChild(cell);
+    function renderTarget() {
+      targetElement.innerHTML = "";
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          const cell = document.createElement("div");
+          cell.className = "target-cell";
+          cell.textContent = targetPattern[y][x];
+          targetElement.appendChild(cell);
+        }
+      }
     }
-    const br = document.createElement("br");
-    targetDiv.appendChild(br);
-  }
-}
 
-function move(dx, dy) {
-  x = Math.max(0, Math.min(size - 1, x + dx));
-  y = Math.max(0, Math.min(size - 1, y + dy));
-  drawGrid();
-}
-
-function action() {
-  grid[y][x] = grid[y][x] === 0 ? 1 : 0;
-  drawGrid();
-}
-
-function checkWin() {
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
-      if (grid[i][j] !== targetPattern[i][j]) return false;
+    function move(dx, dy) {
+      const newX = currentX + dx;
+      const newY = currentY + dy;
+      if (newX >= 0 && newX < gridSize && newY >= 0 && newY < gridSize) {
+        currentX = newX;
+        currentY = newY;
+        renderGrid();
+      }
     }
-  }
-  return true;
-}
 
-function startTimer() {
-  let seconds = 15;
-  document.getElementById("timer").textContent = `⏳ ${seconds} секунд осталось...`;
-  timerInterval = setInterval(() => {
-    seconds--;
-    document.getElementById("timer").textContent = `⏳ ${seconds} секунд осталось...`;
-    if (seconds <= 0) {
+    function action() {
+      if (gridData[currentY][currentX] === 0) {
+        gridData[currentY][currentX] = 1;
+      }
+      renderGrid();
+    }
+
+    function checkPatternMatch() {
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          if (gridData[y][x] !== targetPattern[y][x]) return false;
+        }
+      }
+      return true;
+    }
+
+    function startTimer() {
       clearInterval(timerInterval);
-      const won = checkWin();
-      document.getElementById("status").textContent = won ? "✅ Access Granted" : "❌ Failed to Execute";
-      document.getElementById("restart").style.display = "block";
+      timeLeft = 15;
+      timerElement.textContent = `⏳ ${timeLeft} секунд осталось...`;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `⏳ ${timeLeft} секунд осталось...`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          const success = checkPatternMatch();
+          messageElement.textContent = success ? "✅ Mission Complete!" : "❌ Failed to execute.";
+          restartBtn.style.display = "inline-block";
+        }
+      }, 1000);
     }
-  }, 1000);
-}
 
-function restart() {
-  grid = generatePattern();
-  targetPattern = generatePattern();
-  x = 0;
-  y = 0;
-  document.getElementById("status").textContent = "";
-  document.getElementById("restart").style.display = "none";
-  drawTarget();
-  drawGrid();
-  startTimer();
-}
+    function startGame() {
+      currentX = 0;
+      currentY = 0;
+      gridData = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
+      targetPattern = generatePattern();
+      messageElement.textContent = "";
+      restartBtn.style.display = "none";
+      renderGrid();
+      renderTarget();
+      startTimer();
+    }
 
-// инициализация
-restart();
-
-  </script>
-</body>
+    startGame();
+  </script></body>
 </html>
