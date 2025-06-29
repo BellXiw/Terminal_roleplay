@@ -1,36 +1,12 @@
-const gridElement = document.getElementById("grid");
-const gridSize = 3;
-let playerX = 0;
-let playerY = 0;
+let gridData = [ [1, 0, 1], [1, 1, 0], [0, 1, 1] ];
 
-// Генерация 3x3 сетки со случайными 0 и 1
-let grid = Array.from({ length: gridSize }, () =>
-  Array.from({ length: gridSize }, () => Math.round(Math.random()))
-);
+let currentY = 0; const gridElement = document.getElementById("grid");
 
-function renderGrid() {
-  gridElement.innerHTML = "";
-  for (let y = 0; y < gridSize; y++) {
-    for (let x = 0; x < gridSize; x++) {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.textContent = x === playerX && y === playerY ? "▲" : grid[y][x];
-      gridElement.appendChild(cell);
-    }
-  }
-}
+function renderGrid() { gridElement.innerHTML = ""; for (let y = 0; y < gridData.length; y++) { const row = document.createElement("div"); row.style.display = "flex"; for (let x = 0; x < gridData[y].length; x++) { const cell = document.createElement("div"); cell.textContent = gridData[y][x]; cell.style.border = "1px solid #0f0"; cell.style.width = "40px"; cell.style.height = "40px"; cell.style.display = "flex"; cell.style.alignItems = "center"; cell.style.justifyContent = "center"; cell.style.color = "#0f0"; cell.style.backgroundColor = y === currentY ? "#003300" : "black"; row.appendChild(cell); } gridElement.appendChild(row); } }
 
-function move(direction) {
-  const newY = playerY + direction;
-  if (newY >= 0 && newY < gridSize) {
-    playerY = newY;
-    renderGrid();
-  }
-}
+function move(dy) { currentY = (currentY + dy + gridData.length) % gridData.length; renderGrid(); }
 
-function action() {
-  grid[playerY][playerX] = grid[playerY][playerX] === 0 ? 1 : 0;
-  renderGrid();
-}
+function action() { for (let x = 0; x < gridData[currentY].length; x++) { if (gridData[currentY][x] === 0) { gridData[currentY][x] = 1; break; } } renderGrid(); }
 
 renderGrid();
+
