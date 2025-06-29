@@ -1,62 +1,34 @@
-const Telegram = window.Telegram.WebApp;
-Telegram.expand();
-
-let matrix = [
+let gridData = [
   [1, 0, 1],
-  [0, 1, 0],
-  [0, 1, 0]
+  [1, 1, 0],
+  [0, 1, 1]
 ];
 
 let selectedRow = 0;
-let completed = false;
 
-function drawGrid() {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
-  matrix.forEach((row, rowIndex) => {
-    const rowDiv = document.createElement("div");
-    rowDiv.classList.add("row");
-    row.forEach((cell, colIndex) => {
-      const cellDiv = document.createElement("div");
-      cellDiv.classList.add("cell");
-      cellDiv.textContent = cell;
-      if (rowIndex === selectedRow && cell === 0) {
-        cellDiv.classList.add("selected");
-      }
-      rowDiv.appendChild(cellDiv);
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  gridData.forEach((row, rowIndex) => {
+    row.forEach(cell => {
+      const div = document.createElement('div');
+      div.className = 'cell';
+      div.textContent = cell;
+      if (rowIndex === selectedRow) div.style.border = '2px solid yellow';
+      grid.appendChild(div);
     });
-    grid.appendChild(rowDiv);
   });
 }
 
-function move(dir) {
-  if (completed) return;
-  selectedRow = (selectedRow + dir + matrix.length) % matrix.length;
-  drawGrid();
+function move(direction) {
+  if (direction === 'up' && selectedRow > 0) selectedRow--;
+  else if (direction === 'down' && selectedRow < 2) selectedRow++;
+  renderGrid();
 }
 
 function action() {
-  if (completed) return;
-  for (let i = 0; i < matrix[selectedRow].length; i++) {
-    if (matrix[selectedRow][i] === 0) {
-      matrix[selectedRow][i] = 1;
-      break;
-    }
-  }
-  drawGrid();
-  checkWin();
+  gridData[selectedRow] = gridData[selectedRow].map(val => val === 0 ? 1 : 0);
+  renderGrid();
 }
 
-function checkWin() {
-  for (let row of matrix) {
-    if (row.includes(0)) return;
-  }
-  completed = true;
-  Telegram.sendData("ACCESS_GRANTED");
-}
-
-function fail() {
-  Telegram.sendData("FAILED");
-}
-
-window.onload = drawGrid;
+window.onload = renderGrid;
