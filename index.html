@@ -1,162 +1,197 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Access Terminal</title>
   <style>
     @font-face {
-      font-family: 'PixeloidSans';
-      src: url('PixeloidSans.ttf') format('truetype');
+      font-family: 'PixelFont';
+      src: url('https://fonts.cdnfonts.com/s/12461/Perfect DOS VGA 437 Win.woff') format('woff');
     }body {
   margin: 0;
-  padding: 0;
-  background-color: #0a0a0a;
-  font-family: 'PixeloidSans', monospace;
-  color: #00ff9c;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  background-color: #000;
+  color: #00ffcc;
+  font-family: 'PixelFont', monospace;
   overflow: hidden;
 }
 
-.terminal-frame {
-  border-radius: 25px;
+.crt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  width: 90vw;
+  max-width: 400px;
+  margin: 40px auto;
   padding: 20px;
-  background: radial-gradient(circle at center, #001100 30%, #000000 100%);
-  box-shadow: 0 0 25px #00ffcc, inset 0 0 20px #00ffcc;
-  text-align: center;
-  width: 320px;
-  transition: all 0.3s ease-in-out;
+  border-radius: 25px;
+  background: radial-gradient(circle at center, #001a12 0%, #000 100%);
+  box-shadow: 0 0 30px #00ffcc, inset 0 0 15px #00ffcc;
+  filter: contrast(1.1) brightness(0.95);
 }
 
 h1 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  text-shadow: 0 0 4px #00ffcc;
-  letter-spacing: 2px;
-  color: #00ffcc;
+  font-size: 1.5em;
+  text-shadow: 0 0 5px #00ffcc;
+  animation: flicker 2s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  40% { opacity: 0.85; }
+  60% { opacity: 0.6; }
+  80% { opacity: 0.9; }
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  margin: 10px 0;
+  grid-template-columns: repeat(3, 40px);
+  gap: 8px;
+  margin: 20px 0;
 }
 
 .cell {
-  border: 1px solid #00ffcc;
   width: 40px;
   height: 40px;
+  background: #000;
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  background-color: #0f0f0f;
-  color: #00ffcc;
+  font-size: 1em;
 }
 
 .selected {
   background-color: #00ffcc;
-  color: #000000;
+  color: #000;
+  box-shadow: 0 0 8px #00ffcc;
 }
 
 .controls {
-  margin-top: 10px;
   display: grid;
-  grid-template-columns: 40px 40px 40px;
-  justify-content: center;
-  gap: 4px;
+  grid-template-columns: repeat(3, 50px);
+  grid-template-rows: repeat(3, 50px);
+  gap: 5px;
+  margin-top: 15px;
 }
 
-.btn {
+.controls button {
+  background: #000;
   border: 1px solid #00ffcc;
-  background-color: #000000;
   color: #00ffcc;
-  width: 40px;
-  height: 40px;
-  font-size: 18px;
-  font-family: 'PixeloidSans', monospace;
+  font-family: 'PixelFont';
+  font-size: 1em;
   cursor: pointer;
-  text-shadow: 0 0 4px #00ffcc;
+  text-shadow: 0 0 3px #00ffcc;
 }
 
-.btn:active {
-  background-color: #00ffcc;
-  color: #000000;
+.controls button:hover {
+  background: #003f33;
 }
 
-.footer {
+.timer {
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 1em;
+  text-shadow: 0 0 3px #00ffcc;
 }
 
-.blinking {
-  animation: blink 1.2s infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-#intro-screen {
+.overlay-scanlines::after {
+  content: "";
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: #000000;
-  color: #00ffcc;
-  font-family: 'PixeloidSans', monospace;
-  font-size: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 99;
-  animation: introFlash 2s ease-in-out forwards;
-}
-
-@keyframes introFlash {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; display: none; }
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 255, 204, 0.04) 0px,
+    rgba(0, 255, 204, 0.04) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  z-index: 2;
 }
 
   </style>
 </head>
 <body>
-  <div id="intro-screen">
-    <div class="blinking">Entering Terminal...</div>
-  </div>  <div class="terminal-frame">
-    <h1>Access Terminal</h1><div class="grid">
-  <div class="cell">0</div>
-  <div class="cell">1</div>
-  <div class="cell">0</div>
-  <div class="cell">0</div>
-  <div class="cell">1</div>
-  <div class="cell">1</div>
-  <div class="cell selected">0</div>
-  <div class="cell">0</div>
-  <div class="cell">0</div>
-</div>
+  <div class="crt overlay-scanlines">
+    <h1>Access Terminal</h1>
+    <div class="grid" id="grid"></div>
+    <div class="controls">
+      <div></div>
+      <button onclick="move('up')">↑</button>
+      <div></div>
+      <button onclick="move('left')">←</button>
+      <button onclick="action()">✔</button>
+      <button onclick="move('right')">→</button>
+      <div></div>
+      <button onclick="move('down')">↓</button>
+      <div></div>
+    </div>
+    <div class="timer" id="timer">⏳ 15</div>
+  </div><audio id="moveSound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.wav"></audio> <audio id="tickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.wav"></audio>
 
-<div class="controls">
-  <div></div>
-  <button class="btn">↑</button>
-  <div></div>
-  <button class="btn">←</button>
-  <button class="btn">✔</button>
-  <button class="btn">→</button>
-  <div></div>
-  <button class="btn">↓</button>
-  <div></div>
-</div>
+  <script>
+    const gridEl = document.getElementById('grid');
+    const timerEl = document.getElementById('timer');
+    const moveSound = document.getElementById('moveSound');
+    const tickSound = document.getElementById('tickSound');
 
-<div class="footer">
-  ⏳ 6
-</div>
+    let grid = [];
+    let selected = [0, 0];
+    let time = 15;
+    let timer;
 
-  </div>
-</body>
+    function drawGrid() {
+      gridEl.innerHTML = '';
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          if (selected[0] === r && selected[1] === c) cell.classList.add('selected');
+          cell.innerText = grid[r][c];
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function move(dir) {
+      moveSound.play();
+      if (dir === 'up' && selected[0] > 0) selected[0]--;
+      if (dir === 'down' && selected[0] < 2) selected[0]++;
+      if (dir === 'left' && selected[1] > 0) selected[1]--;
+      if (dir === 'right' && selected[1] < 2) selected[1]++;
+      drawGrid();
+    }
+
+    function action() {
+      tickSound.play();
+      const [r, c] = selected;
+      grid[r][c] = grid[r][c] === 0 ? 1 : 0;
+      drawGrid();
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        time--;
+        timerEl.innerText = `⏳ ${time}`;
+        if (time <= 0) {
+          clearInterval(timer);
+          alert('ACCESS DENIED');
+        }
+      }, 1000);
+    }
+
+    function init() {
+      grid = Array.from({ length: 3 }, () => [0, 0, 0]);
+      drawGrid();
+      startTimer();
+    }
+
+    init();
+  </script></body>
 </html>
