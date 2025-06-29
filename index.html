@@ -1,7 +1,54 @@
-<div id="controls">
-  <button onclick="move(-1, 0)">⬅️</button>
-  <button onclick="move(0, -1)">⬆️</button>
-  <button onclick="action()">✅ ACTION</button>
-  <button onclick="move(0, 1)">⬇️</button>
-  <button onclick="move(1, 0)">➡️</button>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Terminal Roleplay</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ff00;
+      font-family: monospace;
+      text-align: center;
+      margin-top: 40px;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(3, 40px);
+      grid-gap: 4px;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .cell {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #00ff00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .active {
+      background-color: limegreen;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <h2>Access Terminal</h2>
+  <div id="grid" style="margin: 10px 0;"></div>
+
+  <p>
+    Use ⬅️⬆️⬇️➡️ to move. Tap "ACTION" to change 0 to 1.
+  </p>
+
+  <div id="controls">
+    <button onclick="move(-1, 0)">⬅️</button>
+    <button onclick="move(0, -1)">⬆️</button>
+    <button onclick="action()">✅ ACTION</button>
+    <button onclick="move(0, 1)">⬇️</button>
+    <button onclick="move(1, 0)">➡️</button>
+  </div>
+
+  <!-- Подключение скрипта -->
+  <script src="script.js"></script>
+</body>
+</html>
