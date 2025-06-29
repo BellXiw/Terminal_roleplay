@@ -1,47 +1,66 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Terminal Roleplay</title>
+  <meta charset="UTF-8" />
+  <title>Access Terminal</title>
   <style>
     body {
       background-color: black;
-      color: lime;
+      color: #00FF00;
       font-family: monospace;
       text-align: center;
     }
     #grid, #target {
-      display: inline-grid;
-      grid-template-columns: repeat(3, 40px);
-      gap: 5px;
-      margin: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 50px);
+      gap: 2px;
+      justify-content: center;
+      margin: 10px auto;
     }
-    .cell, .target-cell {
-      width: 40px;
-      height: 40px;
-      border: 1px solid lime;
+    .cell {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #00FF00;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: lime;
+      font-size: 20px;
     }
     .active {
       background-color: lime;
       color: black;
     }
     #controls button {
+      font-size: 20px;
       margin: 5px;
     }
     #message {
       margin-top: 10px;
       font-weight: bold;
     }
+    #restartBtn {
+      display: none;
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 6px 12px;
+      background: #111;
+      border: 1px solid #0f0;
+      color: #0f0;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h2>Access Terminal</h2>
+
+  <div>Target Pattern:</div>
   <div id="target"></div>
+
   <div id="grid"></div>
-  <p>Use ⬅️⬆️⬇️➡️ to move. Tap "ACTION" to change 0 to 1.</p>
+
+  <div id="message">Use ⬅️⬆️⬇️➡️ to move. Tap "ACTION" to change 0 to 1.</div>
+  <div id="timer"></div>
+
   <div id="controls">
     <button onclick="move(-1, 0)">⬅️</button>
     <button onclick="move(0, -1)">⬆️</button>
@@ -49,34 +68,41 @@
     <button onclick="move(0, 1)">⬇️</button>
     <button onclick="move(1, 0)">➡️</button>
   </div>
-  <div id="message"></div>  <script>
-    let gridData = Array(3).fill().map(() => Array(3).fill(0));
-    let missionPattern = generateRandomPattern();
 
-    let cursorX = 0;
-    let cursorY = 0;
+  <button id="restartBtn" onclick="startGame()">🔁 Restart</button>
+
+  <script>
+    const gridSize = 3;
+    let gridData, targetPattern;
+    let currentX = 0, currentY = 0;
+    let gameOver = false;
+    let timerInterval;
 
     const gridElement = document.getElementById("grid");
     const targetElement = document.getElementById("target");
     const messageElement = document.getElementById("message");
+    const timerElement = document.getElementById("timer");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function generateEmptyGrid() {
+      return Array.from({ length: gridSize }, () =>
+        Array.from({ length: gridSize }, () => 0)
+      );
+    }
 
     function generateRandomPattern() {
-      let pattern = Array(3).fill().map(() => Array(3).fill(0));
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          pattern[i][j] = Math.random() > 0.6 ? 1 : 0;
-        }
-      }
-      return pattern;
+      return Array.from({ length: gridSize }, () =>
+        Array.from({ length: gridSize }, () => Math.random() > 0.6 ? 1 : 0)
+      );
     }
 
     function renderGrid() {
       gridElement.innerHTML = "";
-      for (let y = 0; y < 3; y++) {
-        for (let x = 0; x < 3; x++) {
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
           const cell = document.createElement("div");
           cell.className = "cell";
-          if (x === cursorX && y === cursorY) {
+          if (x === currentX && y === currentY) {
             cell.classList.add("active");
           }
           cell.textContent = gridData[y][x];
@@ -87,49 +113,73 @@
 
     function renderTarget() {
       targetElement.innerHTML = "";
-      for (let y = 0; y < 3; y++) {
-        for (let x = 0; x < 3; x++) {
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
           const cell = document.createElement("div");
-          cell.className = "target-cell";
-          cell.textContent = missionPattern[y][x];
+          cell.className = "cell";
+          cell.textContent = targetPattern[y][x];
           targetElement.appendChild(cell);
         }
       }
     }
 
     function move(dx, dy) {
-      cursorX = Math.max(0, Math.min(2, cursorX + dx));
-      cursorY = Math.max(0, Math.min(2, cursorY + dy));
+      if (gameOver) return;
+      currentX = Math.max(0, Math.min(gridSize - 1, currentX + dx));
+      currentY = Math.max(0, Math.min(gridSize - 1, currentY + dy));
       renderGrid();
     }
 
     function action() {
-      if (gridData[cursorY][cursorX] === 0) {
-        gridData[cursorY][cursorX] = 1;
+      if (gameOver) return;
+      if (gridData[currentY][currentX] === 0) {
+        gridData[currentY][currentX] = 1;
         renderGrid();
-        checkPattern();
+        checkSuccess();
       }
     }
 
-    function checkPattern() {
-      for (let y = 0; y < 3; y++) {
-        for (let x = 0; x < 3; x++) {
-          if (gridData[y][x] !== missionPattern[y][x]) {
-            return;
-          }
+    function checkSuccess() {
+      const match = JSON.stringify(gridData) === JSON.stringify(targetPattern);
+      if (match) {
+        endGame("✅ Mission Complete");
+      }
+    }
+
+    function endGame(text) {
+      gameOver = true;
+      clearInterval(timerInterval);
+      messageElement.textContent = text;
+      restartBtn.style.display = "inline-block";
+    }
+
+    function startTimer() {
+      let seconds = 5;
+      timerElement.textContent = `Time left: ${seconds}s`;
+      timerInterval = setInterval(() => {
+        seconds--;
+        timerElement.textContent = `Time left: ${seconds}s`;
+        if (seconds <= 0) {
+          clearInterval(timerInterval);
+          endGame("❌ Failed to execute");
         }
-      }
-      messageElement.textContent = "✅ ACCESS GRANTED! Generating new pattern...";
-      setTimeout(() => {
-        gridData = Array(3).fill().map(() => Array(3).fill(0));
-        missionPattern = generateRandomPattern();
-        messageElement.textContent = "";
-        renderTarget();
-        renderGrid();
-      }, 1500);
+      }, 1000);
     }
 
-    renderTarget();
-    renderGrid();
-  </script></body>
+    function startGame() {
+      gridData = generateEmptyGrid();
+      targetPattern = generateRandomPattern();
+      currentX = 0;
+      currentY = 0;
+      gameOver = false;
+      messageElement.textContent = 'Use ⬅️⬆️⬇️➡️ to move. Tap "ACTION" to change 0 to 1.';
+      restartBtn.style.display = "none";
+      renderGrid();
+      renderTarget();
+      startTimer();
+    }
+
+    startGame();
+  </script>
+</body>
 </html>
