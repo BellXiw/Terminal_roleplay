@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -81,6 +82,13 @@
       cursor: pointer;
       display: none;
     }
+    #statusEmoji {
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      font-size: 24px;
+      color: #00ffcc;
+    }
   </style>
 </head>
 <body>
@@ -99,16 +107,21 @@
     </div>
     <div class="timer">⏳ <span id="timer">10</span></div>
     <button class="restart" id="restart" onclick="location.reload()">Restart</button>
-  </div>  <script>
+    <div id="statusEmoji"></div>
+  </div>
+
+  <script>
     const size = 3;
     const target = [];
     const player = [];
     let x = 0, y = 0;
     let timer = 10;
+    let tick;
     const targetEl = document.getElementById('target');
     const playerEl = document.getElementById('player');
     const timerEl = document.getElementById('timer');
     const restartBtn = document.getElementById('restart');
+    const statusEmoji = document.getElementById('statusEmoji');
 
     function initGrids() {
       for (let i = 0; i < size * size; i++) {
@@ -136,6 +149,7 @@
     }
 
     function move(dir) {
+      if (timer <= 0) return;
       if (dir === 'up' && y > 0) y--;
       if (dir === 'down' && y < size - 1) y++;
       if (dir === 'left' && x > 0) x--;
@@ -144,6 +158,7 @@
     }
 
     function toggleCell() {
+      if (timer <= 0) return;
       const index = y * size + x;
       player[index] = player[index] === 0 ? 1 : 0;
       render();
@@ -154,16 +169,25 @@
       const win = player.every((v, i) => v === target[i]);
       if (win || timer <= 0) {
         clearInterval(tick);
+        document.querySelectorAll('.controls button').forEach(btn => btn.disabled = true);
         restartBtn.style.display = 'block';
+        if (win) {
+          statusEmoji.textContent = '✅';
+          statusEmoji.style.color = '#00ff00';
+        } else {
+          statusEmoji.textContent = '❌';
+          statusEmoji.style.color = '#ff3333';
+        }
       }
     }
 
-    const tick = setInterval(() => {
+    tick = setInterval(() => {
       timer--;
       timerEl.textContent = timer;
       if (timer <= 0) checkWin();
     }, 1000);
 
     initGrids();
-  </script></body>
+  </script>
+</body>
 </html>
