@@ -1,6 +1,23 @@
-<div id="grid" style="margin: 10px 0;"></div>
-<div class="controls">
-  <button onclick="move('up')">⬆️</button>
-  <button onclick="action()">✅ ACTION</button>
-  <button onclick="move('down')">⬇️</button>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Terminal Roleplay</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Access Terminal</h2>
+
+  <div id="grid" style="margin: 10px 0;"></div>
+
+  <p>Use ⬆️ ⬇️ to move. Tap "ACTION" to change 0 to 1.</p>
+
+  <div id="controls">
+    <button onclick="move(-1)">⬆️</button>
+    <button onclick="action()">✅ ACTION</button>
+    <button onclick="move(1)">⬇️</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
