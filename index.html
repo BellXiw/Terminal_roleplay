@@ -2,213 +2,284 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terminal Roleplay</title>
+  <title>Access Terminal</title>
   <style>
     body {
-      background-color: #101010;
-      color: #00ff88;
-      font-family: 'Courier New', monospace;
+      background: #0b0b0b;
+      font-family: monospace;
+      color: #33ff77;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 10px;
-      text-align: center;
-      image-rendering: pixelated;
-    }.screen {
-  background: radial-gradient(ellipse at center, #1a1a1a 0%, #000000 100%);
-  padding: 15px;
-  border-radius: 20px;
-  box-shadow: 0 0 25px #00ff88;
-  border: 2px solid #00ff88;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px 10px 60px;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }h1 {
+  font-size: 1.8em;
+  text-shadow: 0 0 8px #33ff77;
+  margin-bottom: 5px;
 }
 
-h1 {
-  font-size: 24px;
-  color: #00ff88;
-  text-shadow: 0 0 6px #00ff88;
+#intro {
+  animation: fadeIn 1s ease-in-out;
+  font-size: 1.2em;
+  margin-top: 50px;
 }
 
-#pattern, #grid {
+#container {
+  animation: enterGlitch 0.5s ease-in-out;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes enterGlitch {
+  0% { transform: scale(1.02) skewX(3deg); }
+  50% { transform: scale(0.98) skewX(-3deg); }
+  100% { transform: none; }
+}
+
+.grid {
   display: grid;
   grid-template-columns: repeat(3, 40px);
-  gap: 6px;
-  justify-content: center;
-  margin: 12px auto;
+  gap: 5px;
+  margin: 10px;
 }
 
 .cell {
   width: 40px;
   height: 40px;
-  border: 1px solid #00ff88;
+  background: transparent;
+  color: #33ff77;
+  border: 2px solid #33ff77;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #00ff88;
-  font-size: 20px;
+  font-size: 1.2em;
+  transition: background 0.3s;
 }
 
 .active {
-  background-color: #00ff88;
-  color: #101010;
+  background: #33ff77;
+  color: #000;
 }
 
 #controls {
+  margin: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  margin: 12px 0;
 }
 
-.arrow-row {
+.btn-row {
   display: flex;
-  gap: 10px;
   justify-content: center;
+  margin: 2px 0;
 }
 
-.btn {
-  background-color: transparent;
-  color: #00ff88;
-  border: 1px solid #00ff88;
-  padding: 6px 12px;
-  font-size: 18px;
-  font-family: 'Courier New', monospace;
+button {
+  background: transparent;
+  border: 1px solid #33ff77;
+  color: #33ff77;
+  padding: 5px 10px;
+  margin: 2px;
+  font-size: 1em;
+  font-family: monospace;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-#status, #timer {
+button:hover {
+  background: #33ff77;
+  color: #000;
+}
+
+#message, #timer, #success, #fail {
   margin-top: 10px;
-  font-size: 16px;
+  font-size: 1em;
 }
 
-#restart {
+#success {
+  color: #33ff77;
+  text-shadow: 0 0 6px #33ff77;
+  display: none;
+}
+
+#fail {
+  color: #ff4444;
+  display: none;
+}
+
+#restartBtn {
   display: none;
   margin-top: 10px;
-  padding: 6px 16px;
-  font-size: 16px;
-  background-color: transparent;
-  color: #00ff88;
-  border: 1px solid #00ff88;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
 }
 
-.fail {
-  color: #ff4444;
+.glitch {
+  animation: glitch 1s infinite;
+}
+
+@keyframes glitch {
+  0% { text-shadow: 2px 0 red, -2px 0 blue; }
+  50% { text-shadow: -2px 0 red, 2px 0 blue; }
+  100% { text-shadow: 2px 0 red, -2px 0 blue; }
+}
+
+#terminalScreen {
+  border: 2px solid #33ff77;
+  border-radius: 20px;
+  padding: 10px;
+  box-shadow: inset 0 0 40px rgba(51, 255, 119, 0.3);
+  background: linear-gradient(145deg, #0b0b0b 60%, #0e0e0e);
 }
 
   </style>
 </head>
 <body>
-  <div class="screen">
-    <h1 id="terminal-msg">Entering the terminal...</h1>
-    <div id="content" style="display: none;">
-      <p>Target Pattern:</p>
-      <div id="pattern"></div>
-      <div id="grid"></div>
-      <div id="controls">
-        <div class="arrow-row">
-          <button class="btn" onclick="move(0, -1)">↑</button>
-        </div>
-        <div class="arrow-row">
-          <button class="btn" onclick="move(-1, 0)">←</button>
-          <button class="btn" onclick="move(1, 0)">→</button>
-        </div>
-        <div class="arrow-row">
-          <button class="btn" onclick="move(0, 1)">↓</button>
-        </div>
-        <button class="btn" onclick="action()">✅ ACTION</button>
-      </div>
-      <div id="status"></div>
-      <div id="timer"></div>
-      <button id="restart" onclick="startGame()">🔁 Restart</button>
+  <div id="intro">Entering the terminal...</div>  <div id="container">
+    <h1 class="glitch">Access Terminal</h1>
+    <div id="terminalScreen">
+      <div><strong>Target Pattern:</strong></div>
+      <div id="targetGrid" class="grid"></div>
+      <div id="playerGrid" class="grid"></div><div id="controls">
+    <div class="btn-row">
+      <button onclick="move(0, -1)">↑</button>
     </div>
-  </div><audio id="click-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_381db527ba.mp3?filename=click-124467.mp3"></audio>
+    <div class="btn-row">
+      <button onclick="move(-1, 0)">←</button>
+      <button onclick="move(1, 0)">→</button>
+    </div>
+    <div class="btn-row">
+      <button onclick="move(0, 1)">↓</button>
+    </div>
+    <button onclick="action()">✅ ACTION</button>
+  </div>
+</div>
+<div id="timer"></div>
+<div id="message"></div>
+<div id="success">✅ Access Granted</div>
+<div id="fail">❌ Failed to execute.</div>
+<button id="restartBtn" onclick="startGame()">🔁 Restart</button>
+
+  </div><audio id="beep" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_9df49cfc60.mp3" preload="auto"></audio> <audio id="move" src="https://cdn.pixabay.com/download/audio/2022/02/10/audio_5a1426cf69.mp3" preload="auto"></audio>
 
   <script>
-    let grid = [];
-    let pattern = [];
-    let pos = [0, 0];
-    let time = 15;
-    let timerInterval;
+    const targetGrid = document.getElementById('targetGrid');
+    const playerGrid = document.getElementById('playerGrid');
+    const message = document.getElementById('message');
+    const timerEl = document.getElementById('timer');
+    const success = document.getElementById('success');
+    const fail = document.getElementById('fail');
+    const restartBtn = document.getElementById('restartBtn');
 
-    function playSound() {
-      document.getElementById('click-sound').play();
+    const beepSound = document.getElementById('beep');
+    const moveSound = document.getElementById('move');
+
+    let player = [], target = [];
+    let selectedX = 0, selectedY = 0;
+    let timer, timeLeft = 15;
+
+    function play(sound) {
+      sound.currentTime = 0;
+      sound.play();
     }
 
-    function createGrid(target = false) {
-      const container = document.getElementById(target ? 'pattern' : 'grid');
-      container.innerHTML = '';
-      const data = target ? pattern : grid;
+    function createGrid(gridElement, data, isPlayer = false) {
+      gridElement.innerHTML = '';
+      data.forEach((row, y) => {
+        row.forEach((cell, x) => {
+          const div = document.createElement('div');
+          div.className = 'cell';
+          div.textContent = cell;
+          if (isPlayer && x === selectedX && y === selectedY) div.classList.add('active');
+          gridElement.appendChild(div);
+        });
+      });
+    }
 
+    function randomPattern() {
+      const arr = [];
       for (let y = 0; y < 3; y++) {
+        arr[y] = [];
         for (let x = 0; x < 3; x++) {
-          const cell = document.createElement('div');
-          cell.className = 'cell';
-          if (!target && x === pos[0] && y === pos[1]) cell.classList.add('active');
-          cell.innerText = data[y][x];
-          container.appendChild(cell);
+          arr[y][x] = Math.random() < 0.5 ? 0 : 1;
         }
       }
+      return arr;
     }
 
     function move(dx, dy) {
-      playSound();
-      pos[0] = (pos[0] + dx + 3) % 3;
-      pos[1] = (pos[1] + dy + 3) % 3;
-      createGrid();
+      play(moveSound);
+      selectedX = Math.max(0, Math.min(2, selectedX + dx));
+      selectedY = Math.max(0, Math.min(2, selectedY + dy));
+      update();
     }
 
     function action() {
-      playSound();
-      const [x, y] = pos;
-      grid[y][x] = 1;
-      createGrid();
-      checkWin();
+      play(beepSound);
+      player[selectedY][selectedX] = 1;
+      update();
+      check();
     }
 
-    function checkWin() {
-      for (let y = 0; y < 3; y++) {
-        for (let x = 0; x < 3; x++) {
-          if (grid[y][x] !== pattern[y][x]) return;
+    function check() {
+      const match = JSON.stringify(player) === JSON.stringify(target);
+      if (match) {
+        clearInterval(timer);
+        success.style.display = 'block';
+        restartBtn.style.display = 'block';
+        playerGrid.innerHTML = '';
+        targetGrid.innerHTML = '';
+        document.getElementById('controls').style.display = 'none';
+        timerEl.style.display = 'none';
+      }
+    }
+
+    function update() {
+      createGrid(targetGrid, target);
+      createGrid(playerGrid, player, true);
+    }
+
+    function countdown() {
+      timeLeft = 15;
+      timerEl.style.display = 'block';
+      timer = setInterval(() => {
+        timerEl.textContent = `⏳ ${timeLeft} секунд осталось...`;
+        timeLeft--;
+        if (timeLeft < 0) {
+          clearInterval(timer);
+          fail.style.display = 'block';
+          restartBtn.style.display = 'block';
+          document.getElementById('controls').style.display = 'none';
         }
-      }
-      clearInterval(timerInterval);
-      document.getElementById('status').innerHTML = '✅ Access Granted';
-      document.getElementById('restart').style.display = 'inline-block';
-    }
-
-    function updateTimer() {
-      document.getElementById('timer').innerText = `⏳ ${time} секунд осталось...`;
-      if (time <= 0) {
-        clearInterval(timerInterval);
-        document.getElementById('status').innerHTML = '<span class="fail">❌ Failed to execute.</span>';
-        document.getElementById('restart').style.display = 'inline-block';
-      }
-      time--;
-    }
-
-    function generatePattern() {
-      pattern = Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => Math.round(Math.random())));
+      }, 1000);
     }
 
     function startGame() {
-      time = 15;
-      pos = [0, 0];
-      grid = Array.from({ length: 3 }, () => Array(3).fill(0));
-      generatePattern();
-      createGrid(true);
-      createGrid();
-      document.getElementById('status').innerText = '';
-      document.getElementById('restart').style.display = 'none';
-      clearInterval(timerInterval);
-      timerInterval = setInterval(updateTimer, 1000);
+      fail.style.display = 'none';
+      success.style.display = 'none';
+      restartBtn.style.display = 'none';
+      document.getElementById('controls').style.display = 'block';
+      player = [ [0,0,0], [0,0,0], [0,0,0] ];
+      target = randomPattern();
+      selectedX = 0;
+      selectedY = 0;
+      update();
+      countdown();
     }
 
-    // Intro text, then start game
     setTimeout(() => {
-      document.getElementById('terminal-msg').style.display = 'none';
-      document.getElementById('content').style.display = 'block';
+      document.getElementById('intro').style.display = 'none';
+      document.getElementById('container').style.display = 'flex';
       startGame();
     }, 2000);
   </script></body>
