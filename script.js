@@ -1,16 +1,59 @@
-// script.js
+const gridSize = 3;
+let gridData = Array.from({ length: gridSize }, () =>
+  Array.from({ length: gridSize }, () => Math.round(Math.random()))
+);
+let targetPattern = JSON.parse(JSON.stringify(gridData)); // Копируем как цель
+let currentX = 0;
+let currentY = 0;
 
-// Генерация случайного шаблона 3x3 из 0 и 1 function generatePattern() { const pattern = []; for (let y = 0; y < 3; y++) { const row = []; for (let x = 0; x < 3; x++) { row.push(Math.random() > 0.5 ? 1 : 0); } pattern.push(row); } return pattern; }
+const gridElement = document.getElementById("grid");
 
-let gridData = generatePattern(); let targetPattern = generatePattern(); let currentY = 0; let currentX = 0; const gridElement = document.getElementById("grid");
+function renderGrid() {
+  gridElement.innerHTML = "";
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      if (gridData[y][x] === 1) {
+        cell.classList.add("on");
+      }
+      if (x === currentX && y === currentY) {
+        cell.classList.add("active");
+      }
+      gridElement.appendChild(cell);
+    }
+    const br = document.createElement("br");
+    gridElement.appendChild(br);
+  }
+}
 
-function renderGrid() { gridElement.innerHTML = ""; for (let y = 0; y < gridData.length; y++) { for (let x = 0; x < gridData[y].length; x++) { const cell = document.createElement("div"); cell.className = "cell"; if (y === currentY && x === currentX) { cell.classList.add("selected"); } if (gridData[y][x] === 1) { cell.classList.add("active"); } cell.textContent = gridData[y][x]; gridElement.appendChild(cell); } } }
+function move(dx, dy) {
+  const newX = currentX + dx;
+  const newY = currentY + dy;
+  if (newX >= 0 && newX < gridSize) currentX = newX;
+  if (newY >= 0 && newY < gridSize) currentY = newY;
+  renderGrid();
+}
 
-function move(dy, dx) { currentY = (currentY + dy + 3) % 3; currentX = (currentX + dx + 3) % 3; renderGrid(); }
+function action() {
+  if (gridData[currentY][currentX] === 0) {
+    gridData[currentY][currentX] = 1;
+    renderGrid();
+    checkWin();
+  }
+}
 
-function action() { if (gridData[currentY][currentX] === 0) { gridData[currentY][currentX] = 1; } renderGrid(); checkWin(); }
+function checkWin() {
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      if (gridData[y][x] !== targetPattern[y][x]) {
+        return;
+      }
+    }
+  }
 
-function checkWin() { for (let y = 0; y < 3; y++) { for (let x = 0; x < 3; x++) { if (gridData[y][x] !== targetPattern[y][x]) { return; } } } alert("ACCESS GRANTED\nSystem Matched"); targetPattern = generatePattern(); gridData = generatePattern(); currentX = 0; currentY = 0; renderGrid(); }
+  // Победа — мигающая рамка
+  gridElement.style.animation = "flash 0.5s infinite alternate";
+}
 
 renderGrid();
-
