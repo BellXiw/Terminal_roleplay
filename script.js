@@ -1,70 +1,16 @@
-let mission = [];
-let gridData = [];
-let currentY = 0;
-const gridElement = document.getElementById("grid");
+// script.js
 
-function generateMission() {
-  mission = [];
-  for (let y = 0; y < 3; y++) {
-    mission[y] = [];
-    for (let x = 0; x < 3; x++) {
-      mission[y][x] = Math.random() > 0.5 ? 1 : 0;
-    }
-  }
-  gridData = mission.map(row => [...row]); // Копия
-  currentY = 0;
-  renderGrid();
-}
+// Генерация случайного шаблона 3x3 из 0 и 1 function generatePattern() { const pattern = []; for (let y = 0; y < 3; y++) { const row = []; for (let x = 0; x < 3; x++) { row.push(Math.random() > 0.5 ? 1 : 0); } pattern.push(row); } return pattern; }
 
-function renderGrid() {
-  gridElement.innerHTML = "";
+let gridData = generatePattern(); let targetPattern = generatePattern(); let currentY = 0; let currentX = 0; const gridElement = document.getElementById("grid");
 
-  for (let y = 0; y < 3; y++) {
-    for (let x = 0; x < 3; x++) {
-      const cell = document.createElement("span");
-      cell.textContent = gridData[y][x];
-      cell.style.border = "1px solid green";
-      cell.style.padding = "10px";
-      cell.style.margin = "1px";
-      cell.style.display = "inline-block";
-      cell.style.width = "20px";
-      cell.style.textAlign = "center";
-      if (y === currentY) {
-        cell.style.backgroundColor = "#00ff00";
-        cell.style.color = "#000";
-      }
-      gridElement.appendChild(cell);
-    }
-    gridElement.appendChild(document.createElement("br"));
-  }
-}
+function renderGrid() { gridElement.innerHTML = ""; for (let y = 0; y < gridData.length; y++) { for (let x = 0; x < gridData[y].length; x++) { const cell = document.createElement("div"); cell.className = "cell"; if (y === currentY && x === currentX) { cell.classList.add("selected"); } if (gridData[y][x] === 1) { cell.classList.add("active"); } cell.textContent = gridData[y][x]; gridElement.appendChild(cell); } } }
 
-function move(direction) {
-  currentY += direction;
-  if (currentY < 0) currentY = 2;
-  if (currentY > 2) currentY = 0;
-  renderGrid();
-}
+function move(dy, dx) { currentY = (currentY + dy + 3) % 3; currentX = (currentX + dx + 3) % 3; renderGrid(); }
 
-function action() {
-  for (let x = 0; x < 3; x++) {
-    if (gridData[currentY][x] === 0) {
-      gridData[currentY][x] = 1;
-    }
-  }
-  renderGrid();
-  checkMission();
-}
+function action() { if (gridData[currentY][currentX] === 0) { gridData[currentY][currentX] = 1; } renderGrid(); checkWin(); }
 
-function checkMission() {
-  for (let y = 0; y < 3; y++) {
-    for (let x = 0; x < 3; x++) {
-      if (gridData[y][x] !== mission[y][x]) return;
-    }
-  }
+function checkWin() { for (let y = 0; y < 3; y++) { for (let x = 0; x < 3; x++) { if (gridData[y][x] !== targetPattern[y][x]) { return; } } } alert("ACCESS GRANTED\nSystem Matched"); targetPattern = generatePattern(); gridData = generatePattern(); currentX = 0; currentY = 0; renderGrid(); }
 
-  alert("✅ Миссия выполнена!");
-  generateMission();
-}
+renderGrid();
 
-generateMission();
