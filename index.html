@@ -1,195 +1,218 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Terminal Roleplay</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Terminal</title>
   <style>
     body {
-      background-color: black;
-      color: lime;
+      background-color: #0d0d0d;
+      color: #33ff77;
       font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      margin: 0;
-      padding: 10px;
+      text-align: center;
+      padding: 20px;
     }
     h1 {
-      font-size: 1.5em;
+      font-size: 1.8em;
       margin-bottom: 10px;
+      text-shadow: 0 0 5px #33ff77;
     }
-    #pattern,
-    #grid {
+    #terminalIntro {
+      font-size: 1.2em;
+      animation: blink 0.8s steps(1) 5;
+    }
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+    .grid, .target {
       display: grid;
-      grid-template-columns: repeat(3, 40px);
+      grid-template-columns: repeat(3, 50px);
+      justify-content: center;
       gap: 5px;
-      margin: 10px 0;
+      margin: 10px auto;
     }
-    .cell {
-      width: 40px;
-      height: 40px;
+    .cell, .target-cell {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #33ff77;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid lime;
-      font-size: 1.1em;
+      font-size: 1.2em;
+      background-color: #0d0d0d;
+      color: #33ff77;
     }
-    .active {
-      background-color: lime;
-      color: black;
+    .highlight {
+      background-color: #1a1a1a;
+      border: 1px solid #66ff99;
+    }
+    .filled {
+      background-color: #339966;
+    }
+    .target-title {
+      margin-top: 20px;
+      margin-bottom: 5px;
+      font-size: 1.2em;
     }
     #controls {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 15px;
       margin-top: 10px;
-      flex-wrap: wrap;
     }
-    #dpad {
-      display: grid;
-      grid-template-columns: 60px 60px 60px;
-      grid-template-rows: 60px 60px 60px;
-      gap: 5px;
-      margin-right: 20px;
+    .nav-row {
+      display: flex;
+      gap: 10px;
+      margin: 5px 0;
     }
-    #dpad button {
-      width: 60px;
-      height: 60px;
-      font-size: 1.2em;
+    button {
+      background-color: #1f1f1f;
+      color: #33ff77;
+      border: 1px solid #33ff77;
+      font-family: monospace;
+      font-size: 1em;
+      padding: 5px 10px;
+      cursor: pointer;
     }
-    #action-btn {
-      align-self: center;
+    button:hover {
+      background-color: #2a2a2a;
     }
-    #timer {
-      margin-top: 15px;
-      color: yellow;
-      font-size: 1.2em;
+    #status, #timer {
+      margin-top: 10px;
+      font-size: 1em;
     }
     #restart {
       margin-top: 10px;
-      padding: 6px 16px;
-      font-size: 1em;
     }
   </style>
 </head>
 <body>
   <h1>Access Terminal</h1>
-  <div>Target Pattern:</div>
-  <div id="pattern"></div>
-  <div id="grid"></div>  <div id="controls">
-    <div id="dpad">
-      <div></div>
-      <button onclick="move(0, -1)">⬆️</button>
-      <div></div>
-      <button onclick="move(-1, 0)">⬅️</button>
-      <div></div>
-      <button onclick="move(1, 0)">➡️</button>
-      <div></div>
-      <button onclick="move(0, 1)">⬇️</button>
-      <div></div>
-    </div>
-    <div id="action-btn">
-      <button onclick="action()">✅ ACTION</button>
-    </div>
-  </div>  <div id="timer"></div>
-  <button id="restart" onclick="startGame()">🔁 Restart</button>  <script>
-    const gridSize = 3;
+  <div id="terminalIntro">Entering the terminal...</div>  <div id="mainContent" style="display: none;">
+    <div class="target-title">Target Pattern:</div>
+    <div id="target" class="target"></div>
+    <div id="grid" class="grid"></div><div id="controls">
+  <div class="nav-row">
+    <button onclick="move(0, -1)">↑</button>
+  </div>
+  <div class="nav-row">
+    <button onclick="move(-1, 0)">←</button>
+    <button onclick="move(1, 0)">→</button>
+  </div>
+  <div class="nav-row">
+    <button onclick="move(0, 1)">↓</button>
+  </div>
+  <div class="nav-row">
+    <button onclick="action()">✅ ACTION</button>
+  </div>
+</div>
+
+<div id="status"></div>
+<div id="timer"></div>
+<div id="restart"></div>
+
+  </div>  <script>
     let grid = [];
-    let pattern = [];
-    let x = 0, y = 0;
+    let targetPattern = [];
+    let x = 0;
+    let y = 0;
     let timer;
     let timeLeft = 15;
+    const size = 3;
 
-    function createGrid() {
-      grid = Array(gridSize).fill(0).map(() => Array(gridSize).fill(0));
-      x = 0;
-      y = 0;
+    function generatePattern() {
+      targetPattern = [];
+      for (let i = 0; i < size; i++) {
+        const row = [];
+        for (let j = 0; j < size; j++) {
+          row.push(Math.round(Math.random()));
+        }
+        targetPattern.push(row);
+      }
     }
 
-    function createPattern() {
-      pattern = Array(gridSize).fill(0).map(() => Array(gridSize).fill(0));
-      for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-          pattern[i][j] = Math.random() > 0.5 ? 1 : 0;
+    function drawTarget() {
+      const targetDiv = document.getElementById("target");
+      targetDiv.innerHTML = "";
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          const cell = document.createElement("div");
+          cell.className = "target-cell";
+          cell.innerText = targetPattern[i][j];
+          targetDiv.appendChild(cell);
         }
       }
     }
 
     function drawGrid() {
-      const gridEl = document.getElementById("grid");
-      gridEl.innerHTML = "";
-      for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
+      const gridDiv = document.getElementById("grid");
+      gridDiv.innerHTML = "";
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
           const cell = document.createElement("div");
           cell.className = "cell";
-          if (i === y && j === x) cell.classList.add("active");
-          cell.textContent = grid[i][j];
-          gridEl.appendChild(cell);
-        }
-      }
-    }
-
-    function drawPattern() {
-      const patternEl = document.getElementById("pattern");
-      patternEl.innerHTML = "";
-      for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-          const cell = document.createElement("div");
-          cell.className = "cell";
-          cell.textContent = pattern[i][j];
-          patternEl.appendChild(cell);
+          if (i === y && j === x) cell.classList.add("highlight");
+          if (grid[i][j] === 1) cell.classList.add("filled");
+          cell.innerText = grid[i][j];
+          gridDiv.appendChild(cell);
         }
       }
     }
 
     function move(dx, dy) {
-      x = Math.max(0, Math.min(gridSize - 1, x + dx));
-      y = Math.max(0, Math.min(gridSize - 1, y + dy));
+      x = Math.max(0, Math.min(size - 1, x + dx));
+      y = Math.max(0, Math.min(size - 1, y + dy));
       drawGrid();
     }
 
     function action() {
-      grid[y][x] = 1;
+      if (grid[y][x] === 0) grid[y][x] = 1;
       drawGrid();
-      checkWin();
+      checkSuccess();
     }
 
-    function checkWin() {
-      for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-          if (grid[i][j] !== pattern[i][j]) return;
+    function checkSuccess() {
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          if (grid[i][j] !== targetPattern[i][j]) return;
         }
       }
       clearInterval(timer);
-      document.getElementById("timer").textContent = "✅ Access Granted!";
+      document.getElementById("status").innerText = "✔ Access Granted!";
+      document.getElementById("status").style.color = "#33ff77";
     }
 
     function startTimer() {
       timeLeft = 15;
-      document.getElementById("timer").textContent = `⏳ ${timeLeft} секунд осталось...`;
+      document.getElementById("timer").innerText = `⏳ ${timeLeft} секунд осталось...`;
       timer = setInterval(() => {
         timeLeft--;
+        document.getElementById("timer").innerText = `⏳ ${timeLeft} секунд осталось...`;
         if (timeLeft <= 0) {
           clearInterval(timer);
-          document.getElementById("timer").textContent = "❌ Время вышло. Failed to execute.";
-        } else {
-          document.getElementById("timer").textContent = `⏳ ${timeLeft} секунд осталось...`;
+          document.getElementById("status").innerText = "✖ Failed to execute.";
+          document.getElementById("status").style.color = "#ff5555";
         }
       }, 1000);
     }
 
-    function startGame() {
-      createGrid();
-      createPattern();
+    function restart() {
+      grid = Array.from({ length: size }, () => Array(size).fill(0));
+      x = 0;
+      y = 0;
+      generatePattern();
+      drawTarget();
       drawGrid();
-      drawPattern();
-      clearInterval(timer);
       startTimer();
+      document.getElementById("status").innerText = "";
+      document.getElementById("restart").innerHTML = "<button onclick='restart()'>🔁 Restart</button>";
     }
 
-    startGame();
+    // Simulate terminal entry
+    setTimeout(() => {
+      document.getElementById("terminalIntro").style.display = "none";
+      document.getElementById("mainContent").style.display = "block";
+      restart();
+    }, 2000);
   </script></body>
 </html>
