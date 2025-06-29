@@ -5,68 +5,47 @@
   <title>Terminal Roleplay</title>
   <style>
     body {
-      background: radial-gradient(ellipse at center, #0c0c0c 0%, #050505 100%);
+      margin: 0;
+      background: #0c0c0c;
       font-family: 'Courier New', monospace;
-      color: #00ff9c;
+      color: #0f0;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: start;
+      justify-content: center;
       height: 100vh;
       overflow: hidden;
-      padding: 20px;
-      box-sizing: border-box;
-      text-shadow: 0 0 5px #00ff9c;
-    }.screen {
-  border: 4px solid #00ff9c;
-  border-radius: 12px;
-  padding: 20px;
-  margin-top: 20px;
-  width: 320px;
-  max-width: 100%;
-  box-shadow: inset 0 0 30px rgba(0, 255, 156, 0.1);
-  background: #0f0f0f;
-  position: relative;
+    }#container {
+  padding: 15px;
+  border-radius: 30px;
+  border: 4px solid #0f0;
+  box-shadow: 0 0 25px rgba(0, 255, 0, 0.5);
+  background: radial-gradient(#111 40%, #000);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#intro {
-  text-align: center;
-  margin-bottom: 10px;
-  font-size: 16px;
-  animation: flicker 1.2s infinite;
-}
-
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-#grid {
+.grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 4px;
-  margin: 10px 0;
+  grid-template-columns: repeat(3, 40px);
+  grid-gap: 5px;
+  margin: 10px;
 }
 
 .cell {
-  width: 50px;
-  height: 50px;
-  background: #222;
-  border: 1px solid #444;
+  width: 40px;
+  height: 40px;
+  background: #111;
+  border: 2px solid #0f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  transition: background 0.2s;
+  font-size: 18px;
+  color: #0f0;
 }
 
-.cursor {
-  outline: 2px dashed #00ff9c;
-}
-
-.target {
-  color: #0ff;
+.selected {
+  outline: 2px dashed #0ff;
 }
 
 #controls {
@@ -76,170 +55,177 @@
   margin: 10px 0;
 }
 
-.arrows {
-  display: grid;
-  grid-template-areas:
-    ". up ."
-    "left action right"
-    ". down .";
-  gap: 6px;
+.row {
+  display: flex;
+  justify-content: center;
+  margin: 2px;
 }
 
-.arrows button {
+.btn {
   background: #111;
-  border: 1px solid #0ff;
-  color: #0ff;
-  padding: 10px;
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
-  width: 60px;
-}
-
-.arrows button:hover {
-  background: #0ff;
-  color: #000;
-}
-
-#timer {
-  margin-top: 10px;
-  font-size: 16px;
   color: #0f0;
+  border: 2px solid #0f0;
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  margin: 2px;
+  cursor: pointer;
 }
 
-#status {
-  font-size: 16px;
+.btn:disabled {
+  opacity: 0.3;
+}
+
+#action {
+  padding: 4px 20px;
+  font-size: 18px;
+  margin-top: 6px;
+}
+
+#timer, #message, #restartBtn {
   margin-top: 10px;
+  font-size: 16px;
 }
 
 #restartBtn {
-  display: none;
-  margin-top: 15px;
-  padding: 8px 16px;
-  background: #0f0;
-  color: #000;
-  font-family: inherit;
-  font-weight: bold;
-  border: none;
+  background: #111;
+  color: #0f0;
+  border: 2px solid #0f0;
+  padding: 6px 12px;
   cursor: pointer;
 }
 
-#restartBtn:hover {
-  background: #afa;
+#intro {
+  position: absolute;
+  top: 40%;
+  font-size: 24px;
+  color: #0f0;
+  text-shadow: 0 0 5px #0f0;
+  animation: blink 1s infinite;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-canvas.glitch {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
 }
 
   </style>
 </head>
 <body>
-  <div class="screen">
-    <div id="intro">Entering terminal...</div>
-    <div id="grid"></div>
-    <div id="controls">
-      <div class="arrows">
-        <button style="grid-area: up" onclick="move(0,-1)">⬆️</button>
-        <button style="grid-area: left" onclick="move(-1,0)">⬅️</button>
-        <button style="grid-area: action" onclick="action()">✅</button>
-        <button style="grid-area: right" onclick="move(1,0)">➡️</button>
-        <button style="grid-area: down" onclick="move(0,1)">⬇️</button>
-      </div>
-    </div>
-    <div id="timer">⏳ 15</div>
-    <div id="status"></div>
-    <button id="restartBtn" onclick="startGame()">🔁 Restart</button>
-  </div>  <script>
-    const gridSize = 3;
-    let grid = [];
-    let target = [];
-    let cursor = { x: 0, y: 0 };
-    let timeLeft = 15;
-    let interval;
-    const intro = document.getElementById("intro");
-    const gridElement = document.getElementById("grid");
-    const status = document.getElementById("status");
-    const timer = document.getElementById("timer");
-    const restartBtn = document.getElementById("restartBtn");
-    const controls = document.getElementById("controls");
+  <div id="intro">Entering terminal...</div>
+  <div id="container" style="display:none">
+    <h2>Access Terminal</h2>
+    <div class="grid" id="target"></div>
+    <div class="grid" id="player"></div><div id="controls">
+  <div class="row">
+    <button class="btn" id="up">&#8679;</button>
+  </div>
+  <div class="row">
+    <button class="btn" id="left">&#8678;</button>
+    <button class="btn" id="action">&#10003;</button>
+    <button class="btn" id="right">&#8680;</button>
+  </div>
+  <div class="row">
+    <button class="btn" id="down">&#8681;</button>
+  </div>
+</div>
 
-    function generateTarget() {
-      target = Array.from({ length: gridSize }, () =>
-        Array.from({ length: gridSize }, () => (Math.random() > 0.5 ? 1 : 0))
-      );
+<div id="timer"></div>
+<div id="message"></div>
+<button id="restartBtn" style="display:none">Restart</button>
+
+  </div>  <script>
+    const target = document.getElementById('target');
+    const player = document.getElementById('player');
+    const timer = document.getElementById('timer');
+    const message = document.getElementById('message');
+    const intro = document.getElementById('intro');
+    const container = document.getElementById('container');
+    const restartBtn = document.getElementById('restartBtn');
+    const controls = document.getElementById('controls');
+
+    let grid = [],
+        targetGrid = [],
+        selected = [0, 0],
+        seconds = 15,
+        countdown,
+        finished = false;
+
+    function randomGrid() {
+      return Array.from({ length: 9 }, () => Math.random() > 0.7 ? 1 : 0);
     }
 
-    function renderGrid() {
-      gridElement.innerHTML = "";
-      grid.forEach((row, y) => {
-        row.forEach((cell, x) => {
-          const div = document.createElement("div");
-          div.className = "cell";
-          if (cursor.x === x && cursor.y === y) div.classList.add("cursor");
-          div.textContent = cell;
-          if (target[y][x] === 1) div.classList.add("target");
-          gridElement.appendChild(div);
-        });
+    function drawGrid(el, values, highlight = false) {
+      el.innerHTML = '';
+      values.forEach((v, i) => {
+        const div = document.createElement('div');
+        div.className = 'cell';
+        div.textContent = v;
+        if (highlight && selected[0]*3 + selected[1] === i) div.classList.add('selected');
+        el.appendChild(div);
       });
     }
 
-    function move(dx, dy) {
-      cursor.x = Math.max(0, Math.min(gridSize - 1, cursor.x + dx));
-      cursor.y = Math.max(0, Math.min(gridSize - 1, cursor.y + dy));
-      renderGrid();
-    }
-
-    function action() {
-      grid[cursor.y][cursor.x] = grid[cursor.y][cursor.x] ? 0 : 1;
-      renderGrid();
-      checkWin();
+    function update() {
+      drawGrid(player, grid, true);
+      drawGrid(target, targetGrid);
     }
 
     function checkWin() {
-      const match = grid.every((row, y) =>
-        row.every((cell, x) => cell === target[y][x])
-      );
-      if (match) {
-        endGame("✅ Access Granted");
+      return grid.every((v, i) => v === targetGrid[i]);
+    }
+
+    function finish(win) {
+      finished = true;
+      clearInterval(countdown);
+      message.innerHTML = win ? '<span style="color:lime">> ACCESS GRANTED</span>' : '<span style="color:red">> ACCESS DENIED</span>';
+      controls.style.display = 'none';
+      restartBtn.style.display = 'block';
+    }
+
+    function tick() {
+      seconds--;
+      timer.innerHTML = `&#8987; ${seconds}`;
+      if (seconds <= 0) finish(false);
+    }
+
+    document.getElementById('up').onclick = () => { if (!finished && selected[0]>0) { selected[0]--; update(); } };
+    document.getElementById('down').onclick = () => { if (!finished && selected[0]<2) { selected[0]++; update(); } };
+    document.getElementById('left').onclick = () => { if (!finished && selected[1]>0) { selected[1]--; update(); } };
+    document.getElementById('right').onclick = () => { if (!finished && selected[1]<2) { selected[1]++; update(); } };
+    document.getElementById('action').onclick = () => {
+      if (!finished) {
+        let index = selected[0]*3 + selected[1];
+        grid[index] = grid[index] === 0 ? 1 : 0;
+        update();
+        if (checkWin()) finish(true);
       }
+    };
+
+    restartBtn.onclick = () => start();
+
+    function start() {
+      finished = false;
+      grid = Array(9).fill(0);
+      targetGrid = randomGrid();
+      selected = [0, 0];
+      seconds = 15;
+      message.innerHTML = '';
+      restartBtn.style.display = 'none';
+      controls.style.display = 'block';
+      update();
+      timer.innerHTML = `&#8987; ${seconds}`;
+      clearInterval(countdown);
+      countdown = setInterval(tick, 1000);
     }
 
-    function endGame(msg) {
-      clearInterval(interval);
-      status.textContent = msg;
-      controls.style.display = "none";
-      restartBtn.style.display = "inline-block";
-    }
-
-    function countdown() {
-      clearInterval(interval);
-      interval = setInterval(() => {
-        timeLeft--;
-        timer.textContent = `⏳ ${timeLeft}`;
-        if (timeLeft <= 0) {
-          endGame("❌ Failed to execute");
-        }
-      }, 1000);
-    }
-
-    function startGame() {
-      intro.style.display = "none";
-      grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(0));
-      generateTarget();
-      cursor = { x: 0, y: 0 };
-      timeLeft = 15;
-      controls.style.display = "flex";
-      restartBtn.style.display = "none";
-      status.textContent = "";
-      timer.textContent = `⏳ ${timeLeft}`;
-      renderGrid();
-      countdown();
-    }
-
-    setTimeout(() => startGame(), 2000);
+    // Intro delay
+    setTimeout(() => {
+      intro.style.display = 'none';
+      container.style.display = 'flex';
+      start();
+    }, 2500);
   </script></body>
 </html>
