@@ -211,9 +211,11 @@
         if (win) {
           statusEmoji.textContent = '✅';
           statusEmoji.style.color = '#00ff00';
+          if (window.Telegram?.WebApp?.sendData) Telegram.WebApp.sendData("win");
         } else {
           statusEmoji.textContent = '❌';
           statusEmoji.style.color = '#ff3333';
+          if (window.Telegram?.WebApp?.sendData) Telegram.WebApp.sendData("fail");
         }
       }
     }
