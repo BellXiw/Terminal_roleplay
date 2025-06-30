@@ -142,10 +142,19 @@
   </div>
 
   <script>
+    // Показ приветствия
     setTimeout(() => {
       document.getElementById('welcomeScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
     }, 3000);
+
+    // Проверка запуска WebApp
+    if (window.Telegram && Telegram.WebApp) {
+      Telegram.WebApp.sendData("ready");
+      console.log("[DEBUG] WebApp is ready and sent 'ready'");
+    } else {
+      console.log("[DEBUG] Telegram.WebApp is not defined");
+    }
 
     const size = 3;
     const target = [];
@@ -213,12 +222,14 @@
           statusEmoji.style.color = '#00ff00';
           if (window.Telegram && Telegram.WebApp) {
             Telegram.WebApp.sendData("win");
+            console.log("[DEBUG] Sent win");
           }
         } else {
           statusEmoji.textContent = '❌';
           statusEmoji.style.color = '#ff3333';
           if (window.Telegram && Telegram.WebApp) {
             Telegram.WebApp.sendData("fail");
+            console.log("[DEBUG] Sent fail");
           }
         }
       }
