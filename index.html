@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,109 +14,114 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-    }#welcomeScreen {
-  position: absolute;
-  font-size: 24px;
-  color: #00ffcc;
-  text-shadow: 0 0 10px #00ffcc;
-  animation: blinker 1s linear infinite;
-  z-index: 1000;
-}
+    }
 
-@keyframes blinker {
-  50% {
-    opacity: 0;
-  }
-}
+    #welcomeScreen {
+      position: absolute;
+      font-size: 24px;
+      color: #00ffcc;
+      text-shadow: 0 0 10px #00ffcc;
+      animation: blinker 1s linear infinite;
+      z-index: 1000;
+    }
 
-.container {
-  border: 3px solid #00ffcc;
-  border-radius: 30px;
-  padding: 20px;
-  box-shadow: 0 0 30px #00ffcc;
-  text-align: center;
-  position: relative;
-}
+    @keyframes blinker {
+      50% {
+        opacity: 0;
+      }
+    }
 
-h1 {
-  margin-top: 0;
-  font-size: 28px;
-  color: #00ffcc;
-  text-shadow: 0 0 10px #00ffcc;
-}
+    .container {
+      border: 3px solid #00ffcc;
+      border-radius: 30px;
+      padding: 20px;
+      box-shadow: 0 0 30px #00ffcc;
+      text-align: center;
+      position: relative;
+    }
 
-.grids {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-bottom: 20px;
-}
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+      color: #00ffcc;
+      text-shadow: 0 0 10px #00ffcc;
+    }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 40px);
-  gap: 5px;
-}
+    .grids {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 20px;
+    }
 
-.cell {
-  width: 40px;
-  height: 40px;
-  border: 2px solid #00ffcc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 40px);
+      gap: 5px;
+    }
 
-.selected {
-  background: #00ffcc;
-  color: black;
-}
+    .cell {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #00ffcc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
 
-.controls {
-  display: grid;
-  grid-template-columns: repeat(3, 50px);
-  grid-template-rows: repeat(2, 50px);
-  gap: 5px;
-  justify-content: center;
-  margin: 10px 0;
-}
+    .selected {
+      background: #00ffcc;
+      color: black;
+    }
 
-.controls button {
-  background: black;
-  color: #00ffcc;
-  border: 2px solid #00ffcc;
-  font-size: 18px;
-  cursor: pointer;
-}
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 50px);
+      grid-template-rows: repeat(2, 50px);
+      gap: 5px;
+      justify-content: center;
+      margin: 10px 0;
+    }
 
-.timer {
-  margin-top: 10px;
-  font-size: 18px;
-}
+    .controls button {
+      background: black;
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+      font-size: 18px;
+      cursor: pointer;
+    }
 
-.restart {
-  margin-top: 10px;
-  padding: 5px 10px;
-  font-size: 16px;
-  border: 2px solid #00ffcc;
-  background: black;
-  color: #00ffcc;
-  cursor: pointer;
-  display: none;
-}
+    .timer {
+      margin-top: 10px;
+      font-size: 18px;
+    }
 
-#statusEmoji {
-  position: absolute;
-  bottom: 15px;
-  right: 20px;
-  font-size: 24px;
-  color: #00ffcc;
-}
+    .restart {
+      margin-top: 10px;
+      padding: 5px 10px;
+      font-size: 16px;
+      border: 2px solid #00ffcc;
+      background: black;
+      color: #00ffcc;
+      cursor: pointer;
+      display: none;
+    }
 
+    #statusEmoji {
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      font-size: 24px;
+      color: #00ffcc;
+    }
   </style>
 </head>
-<body>  <div id="welcomeScreen">Entering the terminal...</div>  <div id="mainApp" style="display: none;">
+<body>
+
+  <div id="welcomeScreen">Entering the terminal...</div>
+
+  <div id="mainApp" style="display: none;">
     <div class="container">
       <h1>Access Terminal</h1>
       <div class="grids">
@@ -133,7 +139,9 @@ h1 {
       <button class="restart" id="restart" onclick="location.reload()">Restart</button>
       <div id="statusEmoji"></div>
     </div>
-  </div>  <script>
+  </div>
+
+  <script>
     setTimeout(() => {
       document.getElementById('welcomeScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
@@ -199,14 +207,19 @@ h1 {
         clearInterval(tick);
         document.querySelectorAll('.controls button').forEach(btn => btn.disabled = true);
         restartBtn.style.display = 'block';
+
         if (win) {
           statusEmoji.textContent = '✅';
           statusEmoji.style.color = '#00ff00';
-          Telegram.WebApp?.sendData("win");
+          if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.sendData("win");
+          }
         } else {
           statusEmoji.textContent = '❌';
           statusEmoji.style.color = '#ff3333';
-          Telegram.WebApp?.sendData("fail");
+          if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.sendData("fail");
+          }
         }
       }
     }
@@ -218,5 +231,7 @@ h1 {
     }, 1000);
 
     initGrids();
-  </script></body>
+  </script>
+
+</body>
 </html>
