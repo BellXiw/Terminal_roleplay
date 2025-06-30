@@ -13,8 +13,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
       height: 100vh;
     }
+
     #welcomeScreen {
       position: absolute;
       font-size: 24px;
@@ -23,7 +25,9 @@
       animation: blinker 1s linear infinite;
       z-index: 1000;
     }
+
     @keyframes blinker { 50% { opacity: 0; } }
+
     .container {
       border: 3px solid #00ffcc;
       border-radius: 30px;
@@ -32,18 +36,26 @@
       text-align: center;
       position: relative;
     }
-    h1 { margin-top: 0; font-size: 28px; text-shadow: 0 0 10px #00ffcc; }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+      text-shadow: 0 0 10px #00ffcc;
+    }
+
     .grids {
       display: flex;
       justify-content: center;
       gap: 40px;
       margin-bottom: 20px;
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 40px);
       gap: 5px;
     }
+
     .cell {
       width: 40px;
       height: 40px;
@@ -53,7 +65,12 @@
       justify-content: center;
       font-size: 18px;
     }
-    .selected { background: #00ffcc; color: black; }
+
+    .selected {
+      background: #00ffcc;
+      color: black;
+    }
+
     .controls {
       display: grid;
       grid-template-columns: repeat(3, 50px);
@@ -62,6 +79,7 @@
       justify-content: center;
       margin: 10px 0;
     }
+
     .controls button {
       background: black;
       color: #00ffcc;
@@ -69,7 +87,12 @@
       font-size: 18px;
       cursor: pointer;
     }
-    .timer { margin-top: 10px; font-size: 18px; }
+
+    .timer {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
     .restart {
       margin-top: 10px;
       padding: 5px 10px;
@@ -80,12 +103,26 @@
       cursor: pointer;
       display: none;
     }
+
     #statusEmoji {
       position: absolute;
       bottom: 15px;
       right: 20px;
       font-size: 24px;
       color: #00ffcc;
+    }
+
+    .test-buttons {
+      margin-top: 20px;
+    }
+
+    .test-buttons button {
+      margin: 5px;
+      padding: 8px 15px;
+      background: #111;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -111,6 +148,12 @@
       <button class="restart" id="restart" onclick="location.reload()">Restart</button>
       <div id="statusEmoji"></div>
     </div>
+
+    <!-- 👇 ТЕСТОВЫЕ КНОПКИ -->
+    <div class="test-buttons">
+      <button onclick="sendMock('win')">Отправить победу 🟢</button>
+      <button onclick="sendMock('fail')">Отправить поражение 🔴</button>
+    </div>
   </div>
 
   <script>
@@ -119,13 +162,12 @@
       document.getElementById('mainApp').style.display = 'block';
     }, 3000);
 
-    // Защита: Telegram.WebApp не определён
     if (typeof Telegram === 'undefined') {
-      console.warn('[DEBUG] Telegram.WebApp is not defined. Используется заглушка.');
+      console.warn("[DEBUG] Telegram.WebApp is not defined. Используется заглушка.");
       Telegram = {
         WebApp: {
           sendData: function(data) {
-            console.log('[MOCK] WebApp.sendData:', data);
+            console.log("[MOCK] WebApp.sendData:", data);
           }
         }
       };
@@ -209,6 +251,11 @@
       timerEl.textContent = timer;
       if (timer <= 0) checkWin();
     }, 1000);
+
+    function sendMock(result) {
+      console.log("[MOCK] WebApp.sendData:", result);
+      Telegram.WebApp.sendData(result);
+    }
 
     initGrids();
   </script>
